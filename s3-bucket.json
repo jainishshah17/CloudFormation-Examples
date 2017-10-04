@@ -1,0 +1,51 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "IAMUser": {
+      "Type": "AWS::IAM::User"
+    },
+
+    "IAMAcessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": { "UserName": { "Ref": "IAMUser" } }
+    },
+
+    "IAMPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "S3BucketPermissions",
+        "PolicyDocument" : {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "S3BucketPermissions",
+              "Effect": "Allow",
+              "Action": ["s3:*"],
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "S3Bucket" } ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "S3Bucket" }, "/*" ] ] }
+              ]
+            }
+          ]
+        },
+        "Users": [ { "Ref": "IAMUser" } ]
+      }
+    },
+
+    "S3Bucket" : {
+      "Type": "AWS::S3::Bucket",
+      "Properties": { "AccessControl": "Private"}
+    }
+  },
+
+  "Outputs" : {
+    "S3EndPoint" : {
+      "Value" : { "Fn::Join": [ "", [ "s3.dualstack.", { "Ref": "AWS::Region" }, ".amazonaws.com" ] ] },
+      "Description" : "S3 Endpoint"
+    },
+    "BucketName":{
+      "Value" : { "Ref": "S3Bucket" },
+      "Description" : "Name of S3 bucket"
+    }
+  }
+}
